@@ -1,200 +1,274 @@
 import 'dart:async';
-
-import 'package:demo/home.dart';
-import 'package:demo/sample.dart';
+import 'package:demo/screens/data_fetch_screen.dart';
+import 'package:demo/screens/expense.dart';
+import 'package:demo/screens/home.dart';
+import 'package:demo/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
-void main() {
-  // runApp(const MyApp());
-  // runApp(Text(
-  //   "I am Vishal",
-  //   textDirection: TextDirection.ltr,
-  //   style: TextStyle(color: Colors.white, fontSize: 50.0),
-  // ));
-  // //center
-// runApp(
-//   Material(
-//     color: Colors.amberAccent,
-//     child: Center(
-//       child: Text(
-//         "Hello World",
-//          textDirection: TextDirection.ltr,
-//           style: TextStyle(color: Colors.white, fontSize: 50.0),
-//       ),
-//     ),
-//   )
-// );
+import 'package:demo/hive/hive_init.dart';
 
-// runApp(MaterialApp(
-//   debugShowCheckedModeBanner: false,
-//   title: "My App",
-//   home: SplashScreen(),
-  // home: Scaffold(
-  //   appBar: AppBar(title: Text('AppBar')),
-  //   body:   Material(
-  //   color: Colors.amberAccent,
-  //   child: Center(
-  //     child: Text(
-  //       "Hello World",
-  //        textDirection: TextDirection.ltr,
-  //         style: TextStyle(color: Colors.white, fontSize: 50.0),
-  //     ),
-  //   ),
-  // ),
-  // )
-// ));
-
-runApp(
-  MaterialApp(
-    debugShowCheckedModeBanner: false,
-    title: "My App",
-
-    // 🌞 Light Theme
-    theme: ThemeData(
-      brightness: Brightness.light,
-      primarySwatch: Colors.blue,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-      ),
-    ),
-
-    // 🌙 Dark Theme
-    darkTheme: ThemeData(
-      brightness: Brightness.dark,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-      ),
-    ),
-
-    // 🌓 System theme follow karega
-    themeMode: ThemeMode.system,
-
-    home: SplashScreen(),
-  ),
-);
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initHive();
+  runApp(const MyApp());
 }
 
-class SplashScreen extends StatefulWidget{
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
-  State<StatefulWidget> createState() {
-    return SplashScreenState();
-  }
+  State<MyApp> createState() => _MyAppState();
 }
 
-class SplashScreenState extends State<SplashScreen>{
-  @override
-  void initState(){
-    super.initState();
-    Timer(Duration(seconds: 3), 
-    ()=> Navigator.of(context).pushReplacement(MaterialPageRoute
-    (builder: (BuildContext context) => BottomMenu())));
+class _MyAppState extends State<MyApp> {
+  final ValueNotifier<ThemeMode> _themeNotifier = ValueNotifier(ThemeMode.light);
+
+  void changeTheme(ThemeMode mode) {
+    _themeNotifier.value = mode;
   }
+
   @override
   Widget build(BuildContext context) {
-   return Scaffold(
-    appBar: AppBar(
-      title: Text("Splash Screen"),
-    ),
-    body: Center(
-      child: Image.asset('assets/images/logo.png')
-    ),
-   );
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: _themeNotifier,
+      builder: (_, mode, __) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: "My App",
+
+          // 🌞 Light Theme
+          theme: AppTheme.lightTheme,
+
+          // 🌙 Dark Theme
+          darkTheme: AppTheme.darkTheme,
+
+          themeMode: mode,
+
+          home: SplashScreen(
+            onThemeChange: changeTheme,
+            themeNotifier: _themeNotifier,
+          ),
+        );
+      },
+    );
   }
 }
 
-class BottomMenu extends StatefulWidget {
+/* ================= SPLASH SCREEN ================= */
+
+class SplashScreen extends StatefulWidget {
+  final Function(ThemeMode) onThemeChange;
+  final ValueNotifier<ThemeMode> themeNotifier;
+
+  const SplashScreen({
+    super.key,
+    required this.onThemeChange,
+    required this.themeNotifier,
+  });
+
   @override
-  State<StatefulWidget> createState() => _BottomMenuState();
+  State<SplashScreen> createState() => SplashScreenState();
+}
+
+class SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Timer(
+      const Duration(seconds: 3),
+      () => Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => BottomMenu(
+            onThemeChange: widget.onThemeChange,
+            themeNotifier: widget.themeNotifier,
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // 🔹 Logo (Using FlutterLogo as placeholder since asset is missing)
+            const FlutterLogo(size: 100),
+            const SizedBox(height: 24),
+            Text(
+              "Welcome to Demo App",
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blueAccent,
+                  ),
+            ),
+            const SizedBox(height: 24)
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/* ================= BOTTOM MENU ================= */
+
+class BottomMenu extends StatefulWidget {
+  final Function(ThemeMode) onThemeChange;
+  final ValueNotifier<ThemeMode> themeNotifier;
+
+  const BottomMenu({
+    super.key,
+    required this.onThemeChange,
+    required this.themeNotifier,
+  });
+
+  @override
+  State<BottomMenu> createState() => _BottomMenuState();
 }
 
 class _BottomMenuState extends State<BottomMenu> {
   int _selectedItem = 0;
 
-  final pagesData = [
-    HomePage(),
-    AboutPage(),
-    ServicePage(),
-  ];
+  List<Widget> get _pages => [
+        HomePage(
+          onThemeChange: widget.onThemeChange,
+          currentMode: widget.themeNotifier.value,
+        ),
+        const ExpenseHomePage(),
+        const DataFetchScreen(),
+      ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Application'),
-      ),
+      appBar: AppBar(title: const Text('My Application')),
 
-      // ✅ Drawer added here
+      /* ============ DRAWER ============ */
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue),
-              child: Text(
-                'Menu',
-                style: TextStyle(color: Colors.white, fontSize: 24),
-              ),
+            UserAccountsDrawerHeader(
+              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+              accountName: const Text("Stuti Jain"),
+              accountEmail: const Text("stuti@example.com"),
             ),
+
             ListTile(
               leading: const Icon(Icons.home),
               title: const Text('Home'),
               onTap: () {
-                setState(() {
-                  _selectedItem = 0;
-                });
-                Navigator.pop(context); // close drawer
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.info),
-              title: const Text('About'),
-              onTap: () {
-                setState(() {
-                  _selectedItem = 1;
-                });
+                setState(() => _selectedItem = 0);
                 Navigator.pop(context);
               },
             ),
+
             ListTile(
-              leading: const Icon(Icons.cleaning_services),
-              title: const Text('Services'),
+              leading: const Icon(Icons.attach_money),
+              title: const Text('Expenses'),
               onTap: () {
-                setState(() {
-                  _selectedItem = 2;
-                });
+                setState(() => _selectedItem = 1);
                 Navigator.pop(context);
+              },
+            ),
+
+            ListTile(
+              leading: const Icon(Icons.cloud_download),
+              title: const Text('Network Data'),
+              onTap: () {
+                setState(() => _selectedItem = 2);
+                Navigator.pop(context);
+              },
+            ),
+
+            const Divider(),
+
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text(
+                "Theme",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+
+            ValueListenableBuilder<ThemeMode>(
+              valueListenable: widget.themeNotifier,
+              builder: (_, currentMode, __) {
+                return Column(
+                  children: [
+                    RadioListTile<ThemeMode>(
+                      title: const Text("Light Theme"),
+                      value: ThemeMode.light,
+                      groupValue: currentMode,
+                      onChanged: (value) {
+                        widget.onThemeChange(value!);
+                        Navigator.pop(context);
+                      },
+                    ),
+                    RadioListTile<ThemeMode>(
+                      title: const Text("Dark Theme"),
+                      value: ThemeMode.dark,
+                      groupValue: currentMode,
+                      onChanged: (value) {
+                        widget.onThemeChange(value!);
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ],
+                );
               },
             ),
           ],
         ),
       ),
 
-      // ✅ Same screen content changes with tab
-      body: pagesData[_selectedItem],
+      /* ============ BODY ============ */
+      body: _pages[_selectedItem],
 
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedItem,
-        onTap: (value) {
-          setState(() {
-            _selectedItem = value;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.info),
-            label: "About",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.cleaning_services),
-            label: "Services",
-          ),
-        ],
+      /* ============ BOTTOM BAR ============ */
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _selectedItem,
+          onTap: (value) {
+            setState(() {
+              _selectedItem = value;
+            });
+          },
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Theme.of(context).cardColor,
+          selectedItemColor: Colors.blueAccent,
+          unselectedItemColor: Colors.grey,
+          showUnselectedLabels: true,
+          elevation: 0,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_outlined),
+              activeIcon: Icon(Icons.home),
+              label: "Home",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.attach_money),
+              label: "Expenses",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.cloud_download_outlined),
+              activeIcon: Icon(Icons.cloud_download),
+              label: "Network",
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,4 +1,4 @@
-import 'package:demo/api_screen.dart';
+import 'package:demo/screens/data_fetch_screen.dart';
 import 'package:flutter/material.dart';
 import 'chart_screen.dart';
 
@@ -76,18 +76,6 @@ class AboutPage extends StatelessWidget {
 ),
         );
       },
-    );
-  }
-}
-
-class ServicePage extends StatelessWidget{
-   const ServicePage({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: ApiScreen(),
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.blue),
     );
   }
 }
