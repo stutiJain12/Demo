@@ -1,10 +1,13 @@
+import 'package:demo/components/custom_text.dart';
+import 'package:demo/components/custom_row.dart';
 import 'package:flutter/material.dart';
 
 class CommonAlert {
   static Future<void> show({
     required BuildContext context,
     required String title,
-    required String content,
+    String? content,
+    Widget? child,
     String confirmText = 'OK',
     String? cancelText,
     VoidCallback? onConfirm,
@@ -16,23 +19,36 @@ class CommonAlert {
       barrierDismissible: barrierDismissible,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(title),
-          content: Text(content),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: CustomText(title,
+              style: CustomTextStyle.subHeading, textAlign: TextAlign.center),
+          content: child ??
+              (content != null
+                  ? CustomText(content, style: CustomTextStyle.body)
+                  : null),
           actions: <Widget>[
-            if (cancelText != null)
-              TextButton(
-                child: Text(cancelText),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  if (onCancel != null) onCancel();
-                },
-              ),
-            TextButton(
-              child: Text(confirmText),
-              onPressed: () {
-                Navigator.of(context).pop();
-                if (onConfirm != null) onConfirm();
-              },
+            CustomRow(
+              mainAxisAlignment: MainAxisAlignment.end,
+              spacing: 10,
+              children: [
+                if (cancelText != null)
+                  TextButton(
+                    child: CustomText(cancelText, color: Colors.grey),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      if (onCancel != null) onCancel();
+                    },
+                  ),
+                TextButton(
+                  child: CustomText(confirmText,
+                      style: CustomTextStyle.bodyBold,
+                      color: Colors.blueAccent),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    if (onConfirm != null) onConfirm();
+                  },
+                ),
+              ],
             ),
           ],
         );

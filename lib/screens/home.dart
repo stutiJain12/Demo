@@ -1,5 +1,4 @@
-import 'package:demo/components/common_bottom_sheet.dart';
-import 'package:demo/components/common_tab_bar.dart'; 
+import 'package:demo/components/index.dart';
 import 'package:demo/models/user_model.dart';
 import 'package:demo/screens/about_screen.dart';
 import 'package:demo/screens/chart_screen.dart';
@@ -56,12 +55,7 @@ class _HomePageState extends State<HomePage> {
       await _userListBox.add(user);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('User added successfully!'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        CustomSnackBar.show(context, message: 'User added successfully!');
         _nameController.clear();
         _emailController.clear();
         _phoneController.clear();
@@ -74,7 +68,7 @@ class _HomePageState extends State<HomePage> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        body: Column(
+        body: CustomColumn(
           children: [
             const SizedBox(height: 10),
             // 🔹 Custom Tab Bar
@@ -110,92 +104,73 @@ class _HomePageState extends State<HomePage> {
 
   // ================= TAB 1: TASK (FORM) =================
   Widget _buildTaskTab(BuildContext context) {
-    return SingleChildScrollView(
+    return CommonScrollView(
       padding: const EdgeInsets.all(24.0),
-      child: Column(
+      child: CustomColumn(
+        spacing: 30,
         children: [
-          // FORM
-          Card(
-            elevation: 8,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    _buildTextField(
-                      controller: _nameController,
-                      label: 'Name',
-                      icon: Icons.person_outline,
-                      validator: (value) => value!.isEmpty ? 'Enter Name' : null,
-                    ),
-                    const SizedBox(height: 20),
-                    _buildTextField(
-                      controller: _emailController,
-                      label: 'Email',
-                      icon: Icons.email_outlined,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) => value!.contains('@') ? null : 'Enter valid email',
-                    ),
-                    const SizedBox(height: 20),
-                    _buildTextField(
-                      controller: _phoneController,
-                      label: 'Phone',
-                      icon: Icons.phone_outlined,
-                      keyboardType: TextInputType.phone,
-                      validator: (value) => value!.length >= 10 ? null : 'Enter valid phone',
-                    ),
-                    const SizedBox(height: 32),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          elevation: 5,
-                        ),
-                        onPressed: _submitForm,
-                        child: const Text('Submit',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold)),
-                      ),
-                    ),
-                  ],
+          // 🔹 Dynamic Form Card
+          CustomCard(
+            padding: const EdgeInsets.all(24.0),
+            child: CustomForm(
+              formKey: _formKey,
+              children: [
+                CustomTextField(
+                  controller: _nameController,
+                  label: 'Name',
+                  icon: Icons.person_outline,
+                  validator: (value) => value!.isEmpty ? 'Enter Name' : null,
                 ),
-              ),
+                CustomTextField(
+                  controller: _emailController,
+                  label: 'Email',
+                  icon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) =>
+                      value!.contains('@') ? null : 'Enter valid email',
+                ),
+                CustomTextField(
+                  controller: _phoneController,
+                  label: 'Phone',
+                  icon: Icons.phone_outlined,
+                  keyboardType: TextInputType.phone,
+                  validator: (value) =>
+                      value!.length >= 10 ? null : 'Enter valid phone',
+                ),
+                CustomButton(
+                  text: 'Submit',
+                  onPressed: _submitForm,
+                ),
+              ],
             ),
           ),
-          
-          const SizedBox(height: 30),
+
           // Action Buttons
-          Row(
+          CustomRow(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildActionButton(
                 icon: Icons.list_alt,
                 label: 'About',
                 color: Colors.purple,
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen())),
+                onPressed: () => Navigator.push(
+                    context, MaterialPageRoute(builder: (_) => const AboutScreen())),
               ),
               _buildActionButton(
                 icon: Icons.layers,
                 label: 'Sheet',
                 color: Colors.green,
                 onPressed: () {
-                  CommonBottomSheet.show(context: context, child: const Text("Sample Sheet"));
+                  CommonBottomSheet.show(
+                      context: context, child: const Text("Sample Sheet"));
                 },
               ),
               _buildActionButton(
                 icon: Icons.pie_chart,
                 label: 'Chart',
                 color: Colors.orange,
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChartScreen())),
+                onPressed: () => Navigator.push(
+                    context, MaterialPageRoute(builder: (_) => const ChartScreen())),
               ),
             ],
           ),
@@ -209,61 +184,42 @@ class _HomePageState extends State<HomePage> {
     return ValueListenableBuilder(
       valueListenable: _userListBox.listenable(),
       builder: (context, Box<User> box, _) {
-        // If no users, show navigation card
+        // If no users, show dynamic navigation card
         if (box.isEmpty) {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(24.0),
-              child: Card(
-                elevation: 8,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const UserListScreen()),
-                    );
-                  },
-                  borderRadius: BorderRadius.circular(20),
-                  child: Padding(
-                    padding: const EdgeInsets.all(32.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.people_outline,
-                          size: 80,
-                          color: Colors.grey[400],
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'User List',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'No users added yet',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Add users from the Task tab',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[500],
-                          ),
-                        ),
-                      ],
+              child: CustomCard(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const UserListScreen()),
+                  );
+                },
+                padding: const EdgeInsets.all(32.0),
+                child: CustomColumn(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 16,
+                  children: [
+                    Icon(
+                      Icons.people_outline,
+                      size: 80,
+                      color: Colors.grey[400],
                     ),
-                  ),
+                    const CustomText(
+                      'User List',
+                      style: CustomTextStyle.heading,
+                    ),
+                    const CustomText(
+                      'No users added yet',
+                      style: CustomTextStyle.subtitle,
+                    ),
+                    const CustomText(
+                      'Add users from the Task tab',
+                      style: CustomTextStyle.label,
+                      color: Colors.grey,
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -272,80 +228,54 @@ class _HomePageState extends State<HomePage> {
 
         // If users exist, show the list directly
         final users = box.values.toList();
-        return ListView.builder(
-          itemCount: users.length,
+        return CommonListView<User>(
+          items: users,
           padding: const EdgeInsets.all(16),
-          itemBuilder: (context, index) {
-            final user = users[index];
-
-            return Card(
-              elevation: 3,
-              margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          itemBuilder: (context, user, index) {
+            return CustomListTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.blueAccent,
+                radius: 25,
+                child: CustomText(
+                  user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
+                  style: CustomTextStyle.heading,
+                  color: Colors.white,
+                ),
               ),
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                leading: CircleAvatar(
-                  backgroundColor: Colors.blueAccent,
-                  radius: 25,
-                  child: Text(
-                    user.name.isNotEmpty
-                        ? user.name[0].toUpperCase()
-                        : '?',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                title: Text(
-                  user.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.email, size: 14, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            user.email,
-                            style: const TextStyle(fontSize: 13),
-                          ),
+              title: user.name,
+              subtitle: CustomColumn(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 4,
+                children: [
+                  CustomRow(
+                    spacing: 4,
+                    children: [
+                      const Icon(Icons.email, size: 14, color: Colors.grey),
+                      Expanded(
+                        child: CustomText(
+                          user.email,
+                          style: CustomTextStyle.subtitle,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        const Icon(Icons.phone, size: 14, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text(
-                          user.phone,
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                isThreeLine: true,
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                  onPressed: () {
-                    _showDeleteConfirmation(context, user);
-                  },
-                ),
+                      ),
+                    ],
+                  ),
+                  CustomRow(
+                    spacing: 4,
+                    children: [
+                      const Icon(Icons.phone, size: 14, color: Colors.grey),
+                      CustomText(
+                        user.phone,
+                        style: CustomTextStyle.subtitle,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                onPressed: () {
+                  _showDeleteConfirmation(context, user);
+                },
               ),
             );
           },
@@ -355,54 +285,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showDeleteConfirmation(BuildContext context, User user) {
-    showDialog(
+    CommonAlert.show(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete User'),
-        content: Text('Are you sure you want to delete ${user.name}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              user.delete();
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${user.name} deleted'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    String? Function(String?)? validator,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      decoration: InputDecoration(
-        floatingLabelBehavior: FloatingLabelBehavior.always,
-        labelText: label,
-        prefixIcon: Icon(icon),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      ),
-      validator: validator,
+      title: 'Delete User',
+      content: 'Are you sure you want to delete ${user.name}?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      onConfirm: () {
+        user.delete();
+        CustomSnackBar.show(context, message: '${user.name} deleted');
+      },
     );
   }
 
@@ -412,18 +304,17 @@ class _HomePageState extends State<HomePage> {
     required Color color,
     required VoidCallback onPressed,
   }) {
-    return Column(
+    return CustomColumn(
+      spacing: 8,
       children: [
-        CircleAvatar(
-          radius: 25,
-          backgroundColor: color.withOpacity(0.1),
-          child: IconButton(
-            icon: Icon(icon, color: color),
-            onPressed: onPressed,
-          ),
+        CustomIconButton(
+          size: 50,
+          icon: icon,
+          color: color,
+          onPressed: onPressed,
+          border: Border.all(color: color.withOpacity(0.2)),
         ),
-        const SizedBox(height: 8),
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+        CustomText(label, style: CustomTextStyle.label, fontWeight: FontWeight.w500),
       ],
     );
   }

@@ -1,46 +1,46 @@
+import 'package:demo/components/custom_container.dart';
+import 'package:demo/components/custom_column.dart';
+import 'package:demo/components/custom_text.dart';
 import 'package:flutter/material.dart';
 
 class CommonBottomSheet {
-  static Future<void> show({
+  static void show({
     required BuildContext context,
     required Widget child,
+    String? title,
     bool isScrollControlled = true,
-    ShapeBorder? shape,
-    Color? backgroundColor,
-  }) async {
-    return showModalBottomSheet(
+  }) {
+    showModalBottomSheet(
       context: context,
       isScrollControlled: isScrollControlled,
-      backgroundColor: backgroundColor,
-      shape: shape ??
-          const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-      builder: (BuildContext context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 20,
-            right: 20,
-          ),
-          child: Column(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (context) {
+        return CustomContainer(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          borderRadius: 25,
+          color: Theme.of(context).cardColor,
+          child: CustomColumn(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 12),
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
+              CustomContainer(
+                width: 40,
+                height: 5,
+                borderRadius: 2.5,
+                color: Colors.grey.shade300,
+                margin: const EdgeInsets.symmetric(vertical: 10),
+              ),
+              if (title != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: CustomText(
+                    title,
+                    style: CustomTextStyle.subHeading,
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
               Flexible(child: child),
-              const SizedBox(height: 12),
+              const SizedBox(height: 20),
             ],
           ),
         );
